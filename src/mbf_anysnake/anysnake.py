@@ -83,7 +83,6 @@ class Anysnake:
         self.storage_per_hostname = bool(storage_per_hostname)
 
         bin_path = Path(mbf_anysnake.__path__[0]).parent.parent / "bin"
-
         self.paths = {
             "bin": bin_path,
             "storage": storage_path,
@@ -113,7 +112,6 @@ class Anysnake:
         self.docker_build_cmds = docker_build_cmds
         self.global_clones = global_clones
         self.local_clones = local_clones
-
         dfp = DockFill_Python(self)
         dfgv = DockFill_GlobalVenv(self, dfp)
         if self.rust_versions:
@@ -268,11 +266,10 @@ class Anysnake:
                 "/anysnake/run.sh": tf.name,
                 "/etc/passwd": "/etc/passwd",  # the users inside are the users outside
                 "/etc/group": "/etc/group",
-                # "/etc/shadow": "/etc/shadow",
+                "/etc/shadow": "/etc/shadow",
                 "/anysnake/gosu": str(self.paths["bin"] / "gosu-amd64"),
             }
         ]
-        print(ro_volumes)
         rw_volumes = [{"/project": os.path.abspath(".")}]
         for h in home_files:
             p = Path("~").expanduser() / h

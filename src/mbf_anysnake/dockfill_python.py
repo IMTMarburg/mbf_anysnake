@@ -333,11 +333,16 @@ class _DockerFillVenv(_Dockfill_Venv_Base):
                 f"cd {self.poetry_path_inside_docker} && {self.paths['docker_poetry_venv']}/bin/poetry update --verbose",
             ]
             cmd = "\n".join(cmd)
+            # poetry cache needs to be writable, and we're not mounting .cache
+            # by default in .ensure dockers.
+            pypoetry_cache_path = Path("~").expanduser() / ".cache" / "pypoetry"
+            pypoetry_cache_path.mkdir(parents=True, exist_ok=True)
             volumes_ro = self.dockfill_python.volumes.copy()
             volumes_rw = {
                 self.target_path_inside_docker: self.target_path,
                 self.clone_path_inside_docker: self.clone_path,
                 self.paths["docker_poetry_venv"]: self.paths["poetry_venv"],
+                pypoetry_cache_path: pypoetry_cache_path
             }
             env = {}
             paths = [self.target_path_inside_docker + "/bin"]
@@ -477,7 +482,7 @@ class DockFill_CodeVenv(_DockerFillVenv):
         source_dir = self.paths["storage_venv"] / "bin"
         target_dir = self.paths["code_venv"] / "bin"
         for input_fn in source_dir.glob("*"):
-            if not input_fn.is_dir() and not input_fn.name.startswith('python'):
+            if not input_fn.is_dir() and not input_fn.is_symlink():
                 output_fn = target_dir / input_fn.name
                 if not output_fn.exists():
                     input = input_fn.read_bytes()
