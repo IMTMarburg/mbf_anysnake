@@ -54,3 +54,4 @@ tests/run/*
 tests/zipped/*
 pip-wheel-metadata/
 .vscode
+.mypy_cache

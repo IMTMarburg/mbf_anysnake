@@ -353,7 +353,6 @@ class _DockerFillVenv(_Dockfill_Venv_Base):
                 p = Path("~").expanduser() / h
                 if p.exists():
                     volumes_ro[str(Path(home_inside_docker) / h)] = p
-
             env["EXTPATH"] = ":".join(paths)
             # /anysnake/code_venv/bin /anysnake/cargo/bin /anysnake/code_venv/bin /anysnake/storage_venv/bin /anysnake/R/bin /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin /machine/opt/infrastructure/client /machine/opt/infrastructure/repos/FloatingFileSystemClient
             return_code, logs = self.anysnake._run_docker(
@@ -478,7 +477,7 @@ class DockFill_CodeVenv(_DockerFillVenv):
         source_dir = self.paths["storage_venv"] / "bin"
         target_dir = self.paths["code_venv"] / "bin"
         for input_fn in source_dir.glob("*"):
-            if not input_fn.is_dir():
+            if not input_fn.is_dir() and not input_fn.name.startswith('python'):
                 output_fn = target_dir / input_fn.name
                 if not output_fn.exists():
                     input = input_fn.read_bytes()
@@ -501,7 +500,7 @@ class DockFill_CodeVenv(_DockerFillVenv):
                     else:
                         output_fn.write_bytes(input)
                     output_fn.chmod(input_fn.stat().st_mode)
-            pth_path = (
+        pth_path = (
             self.paths["code_venv"]
             / "lib"
             / ("python" + self.anysnake.major_python_version)
