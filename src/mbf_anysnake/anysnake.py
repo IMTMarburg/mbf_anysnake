@@ -270,22 +270,25 @@ class Anysnake:
                 "/anysnake/gosu": str(self.paths["bin"] / "gosu-amd64"),
             }
         ]
-        rw_volumes = [{"/project": os.path.abspath(".")}]
-        for h in home_files:
-            p = Path("~").expanduser() / h
-            if p.exists():
+        rw_volumes = [{"/project": os.path.abspath("."),
+            Path("~").expanduser() : self.paths['home_inside_docker']
+            }
+        ]
+        #for h in home_files:
+            #p = Path("~").expanduser() / h
+            #if p.exists():
                 # if p.is_dir():
                 # rw_volumes[0][str(p)] = str(Path(home_inside_docker) / h)
                 # else:
-                target = str(Path(home_inside_docker) / h)
-                ro_volumes[0][target] = str(p)
-        for h in home_dirs:
-            p = Path("~").expanduser() / h
-            if p.exists() and not p.is_dir():
-                raise ValueError(f"Expected {p} to be a directory")
-            p.mkdir(exist_ok=True, parents=True)
-            target = str(Path(home_inside_docker) / h)
-            rw_volumes[0][target] = str(p)
+                #target = str(Path(home_inside_docker) / h)
+                #ro_volumes[0][target] = str(p)
+        #for h in home_dirs:
+            #p = Path("~").expanduser() / h
+            #if p.exists() and not p.is_dir():
+                #raise ValueError(f"Expected {p} to be a directory")
+            #p.mkdir(exist_ok=True, parents=True)
+            #target = str(Path(home_inside_docker) / h)
+            #rw_volumes[0][target] = str(p)
 
         if allow_writes:
             rw_volumes.extend([df.volumes for df in self.strategies])
@@ -376,6 +379,7 @@ class Anysnake:
             "/etc/group": ("/etc/group", "ro"),
             # "/etc/shadow": ("/etc/shadow", 'ro'),
             "/anysnake/gosu": str(self.paths["bin"] / "gosu-amd64"),
+            Path("~").expanduser() : self.paths['home_inside_docker']
         }
         volumes.update(run_kwargs["volumes"])
         volume_args = {}
