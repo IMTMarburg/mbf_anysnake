@@ -222,6 +222,17 @@ def jupyter(no_build=False):
     if not 'jupyter_contrib_nbextensions' in d.global_python_packages:
         d.global_python_packages['jupyter_contrib_nbextensions'] = ''
 
+    jupyter_r_kernel = ""
+    if d.R_version >= "3.6":
+        # this is shit.
+        # it will enable this by writing to home/.local/share/jupyter
+        # which will be shared by all anysnake runs
+        # independent of actual R version (and we need R 3.6 / bioconductor 3.10
+        # to actually have an R-kernel available.
+        # oh well, it's still much easier and less insane than the other variants
+        # of having a dockfill if jupyter get's installed and R > ...
+        if not Path("~/.local/share/jupyter/kernels/ir").expanduser().exists():
+            jupyter_r_kernel = "echo 'IRkernel::installspec()' | R --no-save --quiet\n"
 
     d.mode = 'jupyter'
     d.run(
@@ -233,6 +244,7 @@ def jupyter(no_build=False):
             if nbextensions_not_activated
             else ""
         )
+        + jupyter_r_kernel
         + config.get('jupyter', {}).get('pre_run_inside','')
         + """jupyter notebook --ip=0.0.0.0 --no-browser\n"""
         + config.get('jupyter', {}).get('post_run_inside',''),
