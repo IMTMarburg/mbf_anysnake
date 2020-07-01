@@ -89,7 +89,7 @@ class DockFill_Rpy2:
                 "storage_rpy2": (
                     find_storage_path_from_other_machine(
                         self.anysnake,
-                        Path("rpy2") / f"{self.python_version}_{self.R_version}_{self.rpy2_version}",
+                        Path("rpy2") / f"py={self.python_version}_r={self.R_version}_rpy2={self.rpy2_version}",
                     )
                 ),
                 "docker_storage_rpy2": "/anysnake/rpy2",
@@ -125,7 +125,7 @@ export RPY2_CFFI_MODE=API
 {self.paths['docker_storage_python']}/bin/virtualenv -p {self.paths['docker_storage_python']}/bin/python {self.paths['docker_storage_rpy2']}
 mkdir /tmp/rpy2
 cd /tmp/rpy2
-{self.paths['docker_storage_rpy2']}/bin/pip3 download rpy2
+{self.paths['docker_storage_rpy2']}/bin/pip3 download rpy2=={self.rpy2_version}
 #this might not be enough later on, if rpy2 gains a version that is
 # dependend on something we don't get as a wheel
 {self.paths['docker_storage_rpy2']}/bin/pip3 install *.whl
