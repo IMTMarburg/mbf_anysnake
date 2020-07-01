@@ -118,6 +118,7 @@ blacklist_per_version = {
         'bioCancer', # xml too old
         'plyranges',  #needs newer tidyselect than at the point of bioconductor release 
         'splatter', #needs newer checkmate than at the point of bioconductor release
+        'trio', # needs logicReg
 
         'animalcules', #??
         'chroGPS', #??
