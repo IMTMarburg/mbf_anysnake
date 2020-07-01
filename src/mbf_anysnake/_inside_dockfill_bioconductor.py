@@ -110,6 +110,22 @@ blacklist_per_version = {
         'KoNLP', # compilation issue
         'sdcMicro',  # can't download?
         'Rmagic',  # can't download?
+
+        'MoonlightR', # needs logicReg which was not in cran at that timepoint
+        'MSGFplus', # some issue detecting java version?
+        'Rcwl', # needs cwltoolo
+        'Rhisat2', # build falirue
+        'bioCancer', # xml too old
+        'plyranges',  #needs newer tidyselect than at the point of bioconductor release 
+        'splatter', #needs newer checkmate than at the point of bioconductor release
+
+        'animalcules', #??
+        'chroGPS', #??
+        'logicFS', #??
+        'readat',#??
+        'sesame',#??
+
+
        }
 }
 
