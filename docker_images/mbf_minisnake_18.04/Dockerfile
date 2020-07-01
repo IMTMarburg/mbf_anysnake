@@ -42,6 +42,7 @@ RUN apt-get update && apt-get install -y \
   gzip\
   hostname\
   libc6\
+  libbz2-dev \
   libssl1.0.0\
   libssl1.1\
   libssl-dev\
