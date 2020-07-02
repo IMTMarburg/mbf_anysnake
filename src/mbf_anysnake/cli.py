@@ -223,7 +223,7 @@ def jupyter(no_build=False):
         d.global_python_packages['jupyter_contrib_nbextensions'] = ''
 
     jupyter_r_kernel = ""
-    if d.R_version >= "3.6":
+    if d.R_version and d.R_version >= "3.6":
         # this is shit.
         # it will enable this by writing to home/.local/share/jupyter
         # which will be shared by all anysnake runs
