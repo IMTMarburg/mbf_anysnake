@@ -68,7 +68,7 @@ class DockFill_Python:
             build_cmds=f"""
 #/bin/bash
 cd ~/
-git clone git://github.com/pyenv/pyenv.git
+git clone http://github.com/pyenv/pyenv.git
 cd pyenv/plugins/python-build
 ./install.sh
 
