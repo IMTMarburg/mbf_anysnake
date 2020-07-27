@@ -19,6 +19,7 @@ duplicate_handling = {
         "survival": "larger",
         "sivipm": "first",  # 1.1-3 and 1.1-4, but 1.1-4 has no tar.gz!
         "mgcv": "larger",
+	'cluster': 'larger',
         # "boot": "last",
     }
 }
