@@ -137,7 +137,14 @@ def shell(no_build=False, allow_writes=False, include_perf=False):
         d.ensure()
     else:
         d.ensure_just_docker()
-    cmd = "/usr/bin/fish"
+    cmd = """
+if [ -f "/usr/bin/fish" ];
+then
+    /usr/bin/fish
+else
+    /bin/bash
+fi
+    """
     if include_perf:
         cmd = (
             "sudo apt-get update;\nsudo apt-get install -y linux-tools-common linux-tools-generic linux-tools-`uname -r`\n"

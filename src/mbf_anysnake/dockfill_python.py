@@ -160,7 +160,7 @@ class Dockfill_PythonPoetry(_Dockfill_Venv_Base):
             paths = [self.target_path_inside_docker + "/bin"]
 
             env["EXTPATH"] = ":".join(paths)
-            cmd = "pip install poetry"
+            cmd = "/anysnake/poetry_venv/bin/pip install poetry"
             if self.python_version[0] == "2":
                 cmd += f" pyopenssl ndg-httpsclient pyasn1"
             return_code, logs = self.anysnake._run_docker(
