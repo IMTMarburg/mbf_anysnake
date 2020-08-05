@@ -138,9 +138,3 @@ def clone_repo(url, name, target_path, log_file):
             if target_path.exists():
                 shutil.rmtree(target_path)
             raise
-
-
-def is_tag_hash(s):
-    """is this docker tag a valid hash as we assign it when running docker builds?"""
-    return bool(re.match("^[a-z0-9]{32}$", s))
-

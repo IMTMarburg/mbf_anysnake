@@ -23,7 +23,7 @@ from .dockfill_clone import DockFill_Clone
 from .dockfill_r import DockFill_R, DockFill_Rpy2
 from .dockfill_bioconductor import DockFill_Bioconductor
 from .dockfill_rust import DockFill_Rust
-from .util import combine_volumes, get_next_free_port, is_tag_hash
+from .util import combine_volumes, get_next_free_port
 
 
 class Anysnake:
@@ -76,7 +76,7 @@ class Anysnake:
         self.storage_per_hostname = storage_per_hostname
 
         docker_tag = docker_image[docker_image.rfind(":") + 1 :]
-        if is_tag_hash(docker_tag):
+        if docker_tag == '%md5sum%':
             storage_path = (
                 storage_path / docker_image[: docker_image.rfind(":")]
             ).absolute()
