@@ -1,5 +1,4 @@
 # -*- coding: future_fstrings -*-
-
 from pathlib import Path
 from docker import from_env as docker_from_env
 import time
@@ -24,7 +23,7 @@ from .dockfill_clone import DockFill_Clone
 from .dockfill_r import DockFill_R, DockFill_Rpy2
 from .dockfill_bioconductor import DockFill_Bioconductor
 from .dockfill_rust import DockFill_Rust
-from .util import combine_volumes, get_next_free_port
+from .util import combine_volumes, get_next_free_port, is_tag_hash
 
 
 class Anysnake:
@@ -76,9 +75,13 @@ class Anysnake:
         self.storage_path = Path(storage_path)
         self.storage_per_hostname = storage_per_hostname
 
-        storage_path = (
-            storage_path / docker_image[: docker_image.rfind(":")]
-        ).absolute()
+        docker_tag = docker_image[docker_image.rfind(":") + 1 :]
+        if is_tag_hash(docker_tag):
+            storage_path = (
+                storage_path / docker_image[: docker_image.rfind(":")]
+            ).absolute()
+        else:
+            storage_path = (storage_path / docker_image.replace(":", "__")).absolute()
         code_path = Path(code_path).absolute()
         self.storage_per_hostname = bool(storage_per_hostname)
 
@@ -91,7 +94,7 @@ class Anysnake:
             "log_storage": storage_path / "logs",
             "log_code": code_path / "logs",
             "per_user": Path("~").expanduser() / ".anysnake",
-            "home_inside_docker": "/home/%s" % self.get_login_username()
+            "home_inside_docker": "/home/%s" % self.get_login_username(),
         }
         self.paths["per_user"].mkdir(exist_ok=True)
 
@@ -253,14 +256,14 @@ class Anysnake:
             + ":$PATH"
         )
         tf.write(f"export PATH={path_str}\n")
-        tf.write(f"umask 0002\n") # allow sharing by default
+        tf.write(f"umask 0002\n")  # allow sharing by default
         tf.write("source /anysnake/code_venv/bin/activate\n")
         tf.write(bash_script)
         print("bash script running inside:\n", bash_script)
         print("")
         tf.flush()
 
-        home_inside_docker = self.paths['home_inside_docker']
+        home_inside_docker = self.paths["home_inside_docker"]
         ro_volumes = [
             {
                 "/anysnake/run.sh": tf.name,
@@ -270,25 +273,27 @@ class Anysnake:
                 "/anysnake/gosu": str(self.paths["bin"] / "gosu-amd64"),
             }
         ]
-        rw_volumes = [{"/project": os.path.abspath("."),
-            Path("~").expanduser() : self.paths['home_inside_docker']
+        rw_volumes = [
+            {
+                "/project": os.path.abspath("."),
+                Path("~").expanduser(): self.paths["home_inside_docker"],
             }
         ]
-        #for h in home_files:
-            #p = Path("~").expanduser() / h
-            #if p.exists():
-                # if p.is_dir():
-                # rw_volumes[0][str(p)] = str(Path(home_inside_docker) / h)
-                # else:
-                #target = str(Path(home_inside_docker) / h)
-                #ro_volumes[0][target] = str(p)
-        #for h in home_dirs:
-            #p = Path("~").expanduser() / h
-            #if p.exists() and not p.is_dir():
-                #raise ValueError(f"Expected {p} to be a directory")
-            #p.mkdir(exist_ok=True, parents=True)
-            #target = str(Path(home_inside_docker) / h)
-            #rw_volumes[0][target] = str(p)
+        # for h in home_files:
+        # p = Path("~").expanduser() / h
+        # if p.exists():
+        # if p.is_dir():
+        # rw_volumes[0][str(p)] = str(Path(home_inside_docker) / h)
+        # else:
+        # target = str(Path(home_inside_docker) / h)
+        # ro_volumes[0][target] = str(p)
+        # for h in home_dirs:
+        # p = Path("~").expanduser() / h
+        # if p.exists() and not p.is_dir():
+        # raise ValueError(f"Expected {p} to be a directory")
+        # p.mkdir(exist_ok=True, parents=True)
+        # target = str(Path(home_inside_docker) / h)
+        # rw_volumes[0][target] = str(p)
 
         if allow_writes:
             rw_volumes.extend([df.volumes for df in self.strategies])
@@ -379,7 +384,7 @@ class Anysnake:
             "/etc/group": ("/etc/group", "ro"),
             # "/etc/shadow": ("/etc/shadow", 'ro'),
             "/anysnake/gosu": str(self.paths["bin"] / "gosu-amd64"),
-            Path("~").expanduser() : self.paths['home_inside_docker']
+            Path("~").expanduser(): self.paths["home_inside_docker"],
         }
         volumes.update(run_kwargs["volumes"])
         volume_args = {}
@@ -393,7 +398,7 @@ class Anysnake:
         # print(run_kwargs["volumes"])
         # if not root and not "user" in run_kwargs:
         # run_kwargs["user"] = "%s:%i" % (self.get_login_username(), os.getgid())
-        tf.write(f"umask 0002\n") # allow sharing by default
+        tf.write(f"umask 0002\n")  # allow sharing by default
         tf.write(bash_script)
         tf.flush()
         container = client.containers.create(
@@ -406,8 +411,7 @@ class Anysnake:
                     self.get_login_username(),
                     "/bin/bash",
                     "/anysnake/run.sh",
-                    ]
-
+                ]
             ),
             **run_kwargs,
         )
@@ -517,7 +521,6 @@ class Anysnake:
             else:
                 entry["method"] = "pip"
         return parsed_packages
-
 
     def get_login_username(self):
         return pwd.getpwuid(os.getuid())[0]
