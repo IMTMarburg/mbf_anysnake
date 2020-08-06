@@ -1,5 +1,4 @@
 # -*- coding: future_fstrings -*-
-
 from pathlib import Path
 import subprocess
 import docker
@@ -36,12 +35,10 @@ class DockFill_Docker:
 
     def get_dockerfile_text(self, docker_image_name):
         b = (
-                self.paths["docker_image_build_scripts"]
-                / docker_image_name
-                / "Dockerfile"
-            ).read_text()
+            self.paths["docker_image_build_scripts"] / docker_image_name / "Dockerfile"
+        ).read_text()
         for s in self.anysnake.strategies:
-            if hasattr(s, 'get_additional_docker_build_cmds'):
+            if hasattr(s, "get_additional_docker_build_cmds"):
                 b += s.get_additional_docker_build_cmds()
         b += "\n" + self.docker_build_cmds + "\n"
         return b
@@ -57,22 +54,20 @@ class DockFill_Docker:
         if self.anysnake.docker_image in tags_available:
             pass
         else:
-            docker_image = self.anysnake.docker_image[: self.anysnake.docker_image.rfind(":")]
-            bs = (
-                self.paths["docker_image_build_scripts"]
-                / docker_image
-                / "build.sh"
-            )
+            docker_image = self.anysnake.docker_image[
+                : self.anysnake.docker_image.rfind(":")
+            ]
+            bs = self.paths["docker_image_build_scripts"] / docker_image / "build.sh"
             if bs.exists():
                 with tempfile.TemporaryDirectory() as td:
                     copytree(str(bs.parent), td)
-                    df = Path(td) / 'Dockerfile'
+                    df = Path(td) / "Dockerfile"
                     df.write_text(self.get_dockerfile_text(docker_image))
                     print("having to call", bs)
                     print(os.listdir(td))
                     subprocess.check_call(["./build.sh"], cwd=str(td))
             else:
-                print(bs, "not found")
+                # print(bs, "not found")
                 client.images.pull(self.anysnake.docker_image)
         return False
 
@@ -84,13 +79,20 @@ class DockFill_Docker:
 
         dockerfile = ()
         hash = hashlib.md5()
-        hash.update(
-            self.get_dockerfile_text(docker_image_name).encode('utf-8')
-        )
-        hash.update(
-            (
-                self.paths["docker_image_build_scripts"] / docker_image_name / "sudoers"
-            ).read_bytes()
-        )
+        try:
+            hash.update(self.get_dockerfile_text(docker_image_name).encode("utf-8"))
+        except FileNotFoundError:
+            pass
+        try:
+            hash.update(
+                (
+                    self.paths["docker_image_build_scripts"]
+                    / docker_image_name
+                    / "sudoers"
+                ).read_bytes()
+            )
+        except FileNotFoundError:
+            pass
+
         tag = hash.hexdigest()
         return tag
