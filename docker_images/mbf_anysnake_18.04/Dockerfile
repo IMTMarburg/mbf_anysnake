@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -y \
   coinor-libclp-dev\
   coinor-libsymphony-dev\
   coreutils\
+  cpanminus\
   curl\
   dash\
   debconf\
