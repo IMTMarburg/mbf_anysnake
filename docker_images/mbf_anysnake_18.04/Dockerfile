@@ -344,7 +344,7 @@ RUN chown u1003 /home/u1003 -R
 RUN chown u1004 /home/u1004 -R
 RUN chown u1018 /home/u1018 -R
 RUN apt-get update
-RUN apt-get install -y libgit2-dev libopencv-dev python3-dev pandoc pandoc-citeproc
+RUN apt-get install -y libgit2-dev libopencv-dev python3-dev pandoc pandoc-citeproc ghostscript
 COPY sudoers /etc/sudoers
 RUN chmod 440 /etc/sudoers
 RUN apt-get -y install ssh && mkdir /run/sshd
