@@ -73,8 +73,11 @@ cd pyenv/plugins/python-build
 ./install.sh
 
 export MAKE_OPTS=-j{self.anysnake.cores}
-export CONFIGURE_OPTS=--enable-shared
-export PYTHON_CONFIGURE_OPTS=--enable-shared
+export CONFIGURE_OPTS="--enable-shared --enable-optimizations"
+
+export PYTHON_CFLAGS="-fno-semantic-interposition"
+export PYTHON_CONFIGURE_OPTS="--enable-shared --enable-optimizations"
+
 python-build {python_version} {self.paths['docker_storage_python']}
 #curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 #{self.paths['docker_storage_python']}/bin/python get-pip.py
