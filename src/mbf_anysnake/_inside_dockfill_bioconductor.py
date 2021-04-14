@@ -19,8 +19,14 @@ duplicate_handling = {
         "survival": "larger",
         "sivipm": "first",  # 1.1-3 and 1.1-4, but 1.1-4 has no tar.gz!
         "mgcv": "larger",
-	'cluster': 'larger',
+	    'cluster': 'larger',
         # "boot": "last",
+        "Cairo": "larger",
+        "cairoDevice": "larger",
+        "svglite": "larger",
+        "vdiffr": "larger",
+        "RODBC": "larger",
+        "XML": "larger",
     }
 }
 blacklist = {
