@@ -132,9 +132,18 @@ blacklist_per_version = {
         'logicFS', #??
         'readat',#??
         'sesame',#??
+    },
+    "3.12": {
+        "biocthis", # needs newer usethis than at the point of bioconductor release
+        "Rmagic", # 
+        "Rcwl", # needs cwltool
+        "synergyfinder", # needs newer dplyr than at the point of biocondutor release
+        "SharedObjects", # compilation issue?
+        "MatrixGenerics", # needs newer matrixStats than at the point of bioconductor release
+        "cytolib", # compilation issue?
+        "ChemmineDB", # ??
+    }
 
-
-       }
 }
 
 manual_dependencies = {  # because the cran annotation sometimes simply is wrong
