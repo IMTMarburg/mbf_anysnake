@@ -349,4 +349,5 @@ COPY sudoers /etc/sudoers
 RUN chmod 440 /etc/sudoers
 RUN apt-get update
 RUN apt-get -y install ssh samtools && mkdir /run/sshd
+RUN apt-get -y install libfribidi-dev libharfbuzz-dev
 RUN groupadd -g 999 docker && usermod -a -G docker u1000 && usermod -a -G docker u1001 && usermod -a -G docker u1002 && usermod -a -G docker u1003 && usermod -a -G docker u1004 && usermod -a -G docker u1018
