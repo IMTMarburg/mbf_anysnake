@@ -314,7 +314,7 @@ class _DockerFillVenv(_Dockfill_Venv_Base):
                 toml += f'\t{k} = "{v}"\n'
             else:
                 extras = [f'"{x}"' for x in self.find_extras(k)]
-                toml += f'\t{k} = {{path = "{self.clone_path_inside_docker}/{k}", extras = [{", ".join(extras)}], devlop = true}}\n'
+                toml += f'\t{k} = {{path = "{self.clone_path_inside_docker}/{k}", extras = [{", ".join(extras)}], develop = true}}\n'
         new_toml = toml
         pyproject_toml = Path(self.poetry_path / "pyproject.toml")
         pyproject_toml.parent.mkdir(exist_ok=True)
