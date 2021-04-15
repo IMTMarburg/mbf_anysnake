@@ -138,10 +138,10 @@ blacklist_per_version = {
         "Rmagic", # 
         "Rcwl", # needs cwltool
         "synergyfinder", # needs newer dplyr than at the point of biocondutor release
-        "SharedObjects", # compilation issue?
+        "SharedObject", # compilation issue?
         "MatrixGenerics", # needs newer matrixStats than at the point of bioconductor release
         "cytolib", # compilation issue?
-        "ChemmineDB", # ??
+        "ChemmineOB", # ??
     }
 
 }
