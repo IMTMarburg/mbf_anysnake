@@ -87,6 +87,7 @@ Basic configuration.
   optional + means next free one
 - docker_build_cmds = "RUN apt-get install -y ssh" - these are appended to the
   dockerfile when building the docker
+- per_user - place to store per user files (defaults to ~/.anysnake)
 
 [run]
 ------

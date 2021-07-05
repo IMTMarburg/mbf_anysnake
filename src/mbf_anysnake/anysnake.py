@@ -66,6 +66,7 @@ class Anysnake:
         docker_build_cmds="",
         global_clones={},
         local_clones={},
+        per_user = None
     ):
         self.cores = cores if cores else multiprocessing.cpu_count()
         self.cran_mirror = cran_mirror
@@ -85,6 +86,11 @@ class Anysnake:
         code_path = Path(code_path).absolute()
         self.storage_per_hostname = bool(storage_per_hostname)
 
+        if per_user is None:
+            per_user = Path("~").expanduser() / ".anysnake"
+        else:
+            per_user = per_user / self.get_login_name()
+
         bin_path = Path(mbf_anysnake.__path__[0]).parent.parent / "bin"
         self.paths = {
             "bin": bin_path,
@@ -93,10 +99,10 @@ class Anysnake:
             "docker_code": code_path_docker,
             "log_storage": storage_path / "logs",
             "log_code": code_path / "logs",
-            "per_user": Path("~").expanduser() / ".anysnake",
+            "per_user": per_user,
             "home_inside_docker": "/home/%s" % self.get_login_username(),
         }
-        self.paths["per_user"].mkdir(exist_ok=True)
+        self.paths["per_user"].mkdir(exist_ok=True, parents=True)
 
         dfd = DockFill_Docker(self, docker_build_cmds)
         self.project_name = project_name

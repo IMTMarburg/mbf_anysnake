@@ -57,7 +57,7 @@ def verify_port(port_def):
     1234+:4567 (external/internal port)
     """
     if re.match(r"^\d+\+?$", str(port_def)):
-        port_def = str(port_def), str(port_def).replace("+",'')
+        port_def = str(port_def), str(port_def).replace("+", "")
     elif re.match(r"^(\d+\+?):(\d+)$", str(port_def)):
         port_def = tuple(re.findall("(\d+\+?):(\d+)", str(port_def))[0])
     else:
@@ -82,7 +82,7 @@ def parsed_to_anysnake(parsed):
     python_version = base["python"]
 
     if "docker_image" in base:
-        if ':' in base["docker_image"]:
+        if ":" in base["docker_image"]:
             docker_image = base["docker_image"]
         else:
             docker_image = base["docker_image"] + ":%md5sum%"
@@ -93,10 +93,8 @@ def parsed_to_anysnake(parsed):
         bioconductor_version = base["bioconductor"]
     else:
         bioconductor_version = None
-    R_version = base.get('R', None)
-    rpy2_version = base.get('rpy2_version', '3.2.0')
-
-
+    R_version = base.get("R", None)
+    rpy2_version = base.get("rpy2_version", "3.2.0")
 
     if "storage_path" in base:
         storage_path = Path(base["storage_path"])
@@ -116,7 +114,7 @@ def parsed_to_anysnake(parsed):
     if "code_path_docker" in base:
         code_path_docker = Path(base["code_path_docker"])
         if not code_path_docker.is_absolute():
-            code_path_docker = Path('/project') / code_path_docker
+            code_path_docker = Path("/project") / code_path_docker
         del base["code_path_docker"]
     else:
         code_path_docker = Path("/project/code")
@@ -148,13 +146,18 @@ def parsed_to_anysnake(parsed):
 
     ports = [verify_port(x) for x in parsed.get("base", {}).get("ports", [])]
 
-    docker_build_cmds = parsed.get("base", {}).get("docker_build_cmds", '')
+    docker_build_cmds = parsed.get("base", {}).get("docker_build_cmds", "")
 
     global_clones = parsed.get("global_clones", {})
     local_clones = parsed.get("local_clones", {})
     check_pip_definitions(global_clones, additional_pip_lookup_res)
     check_pip_definitions(local_clones, additional_pip_lookup_res)
-    
+
+    if "per_user" in base:
+        per_user = Path(base["per_user"])
+    else:
+        per_user = None
+
     return Anysnake(
         project_name=project_name,
         docker_image=docker_image,
@@ -176,8 +179,9 @@ def parsed_to_anysnake(parsed):
         cargo_install=cargo_install,
         ports=ports,
         docker_build_cmds=docker_build_cmds,
-        global_clones = global_clones,
-        local_clones = local_clones,
+        global_clones=global_clones,
+        local_clones=local_clones,
+        per_user=per_user,
     )
 
 
