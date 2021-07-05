@@ -89,7 +89,7 @@ class Anysnake:
         if per_user is None:
             per_user = Path("~").expanduser() / ".anysnake"
         else:
-            per_user = per_user / self.get_login_name()
+            per_user = per_user / self.get_login_username()
 
         bin_path = Path(mbf_anysnake.__path__[0]).parent.parent / "bin"
         self.paths = {
