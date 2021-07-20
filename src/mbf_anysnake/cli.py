@@ -606,6 +606,8 @@ def select_running_container():
     Returns none if none are present
     """
     import json
+    import datetime
+    import math
 
     cwd = str(Path(".").absolute())
     d, parsed = get_anysnake()
@@ -627,15 +629,29 @@ def select_running_container():
                 # if mode in ('run','??', 'jupyter'):
                 ports = extract_ports_from_docker_inspect(info)
                 user = env.get("ANYSNAKE_USER", "??")
+                start_time = info.get('State', {}).get('StartedAt','')
+                if not start_time:
+                    start_time = datetime.datetime.now()
+                else:
+                    start_time = datetime.datetime.strptime(start_time[:start_time.rfind('.')], "%Y-%m-%dT%H:%M:%S")
+
                 candidates.append(
-                    (user, docker_id, info.get("Name", "/?")[1:], mode, ports)
+                    (user, docker_id, info.get("Name", "/?")[1:], mode, ports, start_time)
                 )
     if len(candidates) == 0:
         return None
     else:
         print("Pick one")
-        for (ii, (user, docker_id, name, mode, ports)) in enumerate(sorted(candidates)):
-            print(ii, user, name, mode, ports if ports else "", sep="\t")
+        print("Number",'owner','mode','uptime(hours)','ports', sep="\t")
+        candidates = sorted(candidates, key = lambda x: x[-1]) # sort by runtime
+        for (ii, (user, docker_id, name, mode, ports, start_time)) in enumerate(candidates):
+            delta = datetime.datetime.now() - start_time
+            hours = delta.seconds / 3600
+            ts = f"{math.floor(hours):02}:{math.ceil(60 * (hours - math.floor(hours))):02}"
+            print(ii, user, name, mode, 
+                    ts,
+                    ports if ports else "",
+                    sep="\t")
         chosen = sys.stdin.readline().strip()
         chosen = int(chosen)
         candidates = [candidates[chosen]]
