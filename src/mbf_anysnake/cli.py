@@ -638,7 +638,7 @@ def select_running_container():
             print(ii, user, name, mode, ports if ports else "", sep="\t")
         chosen = sys.stdin.readline().strip()
         chosen = int(chosen)
-        candidates = [candidates[ii]]
+        candidates = [candidates[chosen]]
     if candidates:
         return candidates[0][2], candidates[0][1]
 
