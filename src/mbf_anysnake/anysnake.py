@@ -528,5 +528,6 @@ class Anysnake:
                 entry["method"] = "pip"
         return parsed_packages
 
-    def get_login_username(self):
+    @staticmethod
+    def get_login_username():
         return pwd.getpwuid(os.getuid())[0]

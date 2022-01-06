@@ -3,6 +3,7 @@ import os
 import tempfile
 import click
 import click_completion
+import sys
 
 click_completion.init()
 
@@ -38,7 +39,7 @@ def get_anysnake():
 def get_volumes_config(config, key2):
     """Extract a volumes config from the config if present.
 
-    Representation is a dictionary, 
+    Representation is a dictionary,
         target_path:  source_path
     """
     result = {}
@@ -52,7 +53,7 @@ def get_volumes_config(config, key2):
 @main.command()
 @click.option("--do-time", default=False, is_flag=True)
 def build(do_time=False):
-    """Build everything if necessary - from docker to local venv from project.setup 
+    """Build everything if necessary - from docker to local venv from project.setup
     Outputs full docker_image:tag
     """
     d, _ = get_anysnake()
@@ -73,7 +74,7 @@ def rebuild():
 @main.command()
 @click.argument("packages", nargs=-1, required=True)
 def remove_pip(packages):
-    """Remove pip modules, from anysnake.toml. 
+    """Remove pip modules, from anysnake.toml.
     If they're installed, remove their installation
     If they're editable, remove their code/folders as well"""
     import shutil
@@ -150,7 +151,7 @@ fi
             "sudo apt-get update;\nsudo apt-get install -y linux-tools-common linux-tools-generic linux-tools-`uname -r`\n"
             + cmd
         )
-    d.mode = 'shell'
+    d.mode = "shell"
     print(
         d.run(
             cmd,
@@ -189,7 +190,7 @@ def run(cmd, no_build=False, pre=True, post=True):
     post_run_inside = config.get("run", {}).get("post_run_inside", False)
     if post and post_run_inside:
         cmd += post_run_inside
-    d.mode = 'run'
+    d.mode = "run"
     print(
         d.run(
             cmd,
@@ -226,8 +227,8 @@ def jupyter(no_build=False):
     host_port = get_next_free_port(8888)
     print("Starting notebook at %i" % host_port)
     nbextensions_not_activated = not check_if_nb_extensions_are_activated()
-    if not 'jupyter_contrib_nbextensions' in d.global_python_packages:
-        d.global_python_packages['jupyter_contrib_nbextensions'] = ''
+    if not "jupyter_contrib_nbextensions" in d.global_python_packages:
+        d.global_python_packages["jupyter_contrib_nbextensions"] = ""
 
     jupyter_r_kernel = ""
     if d.R_version and d.R_version >= "3.6":
@@ -241,10 +242,10 @@ def jupyter(no_build=False):
         if not Path("~/.local/share/jupyter/kernels/ir").expanduser().exists():
             jupyter_r_kernel = "echo 'IRkernel::installspec()' | R --no-save --quiet\n"
 
-    d.mode = 'jupyter'
+    d.mode = "jupyter"
     d.run(
         (
-        """
+            """
         jupyter contrib nbextension install --user --symlink
         jupyter nbextensions_configurator enable --user
         """
@@ -252,9 +253,9 @@ def jupyter(no_build=False):
             else ""
         )
         + jupyter_r_kernel
-        + config.get('jupyter', {}).get('pre_run_inside','')
+        + config.get("jupyter", {}).get("pre_run_inside", "")
         + """jupyter notebook --ip=0.0.0.0 --no-browser\n"""
-        + config.get('jupyter', {}).get('post_run_inside',''),
+        + config.get("jupyter", {}).get("post_run_inside", ""),
         home_files=home_files,
         home_dirs=home_dirs,
         volumes_ro=get_volumes_config(config, "additional_volumes_ro"),
@@ -265,12 +266,9 @@ def jupyter(no_build=False):
 
 @main.command()
 @click.option("--no-build/--build", default=False)
-@click.argument('regexps', nargs=-1)
+@click.argument("regexps", nargs=-1)
 def instant_browser(regexps, no_build=False):
-    """Run an instant_browser with everything mapped (build if necessary).
-
-
-    """
+    """Run an instant_browser with everything mapped (build if necessary)."""
     host_port = get_next_free_port(8888)
     print("Starting instant_browser at %i" % host_port)
     d, config = get_anysnake()
@@ -279,9 +277,12 @@ def instant_browser(regexps, no_build=False):
     else:
         d.ensure_just_docker()
 
-    d.mode = 'instant_browser'
+    d.mode = "instant_browser"
     d.run(
-        "instant_browser " + " ".join(regexps,),
+        "instant_browser "
+        + " ".join(
+            regexps,
+        ),
         home_files=home_files,
         home_dirs=home_dirs,
         volumes_ro=get_volumes_config(config, "additional_volumes_ro"),
@@ -290,10 +291,9 @@ def instant_browser(regexps, no_build=False):
     )
 
 
-
 @main.command()
 def docker_tag():
-    """return the currently used docker_tag 
+    """return the currently used docker_tag
     for integration purposes"""
     d, config = get_anysnake()
     print(d.docker_image)
@@ -311,7 +311,7 @@ def ssh(no_build=False):
         "/etc/ssh/ssh_host_ed25519_key",
         "/etc/ssh/ssh_host_rsa_key",
     ).
-    
+
     """
 
     d, config = get_anysnake()
@@ -337,7 +337,7 @@ def ssh(no_build=False):
     tf.flush()
 
     volumes_ro = get_volumes_config(config, "additional_volumes_ro")
-    volumes_ro[Path(tf.name)] = Path(d.paths['home_inside_docker']) / ".ssh/environment"
+    volumes_ro[Path(tf.name)] = Path(d.paths["home_inside_docker"]) / ".ssh/environment"
     import pprint
 
     pprint.pprint(volumes_ro)
@@ -543,54 +543,123 @@ def show_completion(shell, case_insensitive):
     )
     click.echo(click_completion.core.get_code(shell, extra_env=extra_env))
 
+
+def extract_ports_from_docker_inspect(info):
+    host_inside = {}
+    for inside, port_info in info.get("NetworkSettings").get("Ports", {}).items():
+        if "/" in inside:
+            inside = inside[: inside.find("/")]
+        host = port_info[0].get("HostPort", "????")
+        host_inside[host] = inside
+    return host_inside
+
+
+def parse_env(entries):
+    """entries look like X=abc"""
+    res = {}
+    for e in entries:
+        if "=" in e:
+            e = e.split("=", 2)
+            res[e[0]] = e[1]
+    return res
+
+
 @main.command()
-def enter():
-    """exec a fish shell in anysnake docker running from this folder. 
-    Will prompt if there are multiple available
-    """
-    import json
-    import sys
-    cwd = str(Path('.').absolute())
-    d, parsed = get_anysnake()
-    lines = subprocess.check_output(['docker','ps']).decode('utf-8').split("\n")
-    candidates = []
-    for l in lines:
-        if d.docker_image in l:
-            docker_id = l[:l.find(" ")]
-            info = json.loads(subprocess.check_output(['docker','inspect', docker_id]).decode('utf-8'))[0]
-            env = info.get('Config', {}).get('Env', {})
-            found = False
-            mode = '??'
-            for e in env:
-                e = e.split("=", 1)
-                if e[0] =="ANYSNAKE_PROJECT_PATH" and e[1] == cwd: 
-                    found = True
-                elif e[0] =="ANYSNAKE_MODE":
-                    mode = e[1]
-            if found:
-                #if mode in ('run','??', 'jupyter'):
-                candidates.append((docker_id,info.get('Name', '?'), mode))
-    if len(candidates) == 0:
-        print("No docker to enter found")
+def attach():
+    """attach to anysnake docker running from this folder.
+    Will prompt if there are multiple available"""
+    print("Which docker would you like to attach to")
+    chosen = select_running_container()
+    if chosen is None:
+        print("No container to attach found")
         sys.exit(0)
-    elif len(candidates) == 1:
-        print("Entering only available docker")
-        pass
     else:
-        print("Pick one")
-        for (ii, (docker_id, name, mode)) in enumerate(candidates):
-            print(ii, name, mode)
-        chosen = sys.stdin.readline().strip()
-        chosen = int(chosen)
-        candidates = [candidates[ii]]
-    if candidates:
-        print("Entering ", candidates[0][1])
-        cmd = ['docker', 'exec', '-it', candidates[0][0], 'fish']
+        print("attach shell in ", chosen[0])
+        cmd = ["docker", 'attach', chosen[1]]
         p = subprocess.Popen(cmd)
         p.communicate()
         sys.exit(0)
-            
-    #print(d.docker_image)
+
+
+
+@main.command()
+def enter():
+    """exec a fish shell in anysnake docker running from this folder.
+    Will prompt if there are multiple available
+    """
+    print("Choose container to exec a shell")
+    chosen = select_running_container()
+    if chosen is None:
+        print("No container to enter found")
+        sys.exit(0)
+    else:
+        print("exec shell in ", chosen[0])
+        cmd = ["docker", "exec", "-it", chosen[1], "fish"]
+        p = subprocess.Popen(cmd)
+        p.communicate()
+        sys.exit(0)
+
+
+def select_running_container():
+    """Let the user choose a running container (if multiple), or return the
+    only one (name, docker_id).
+    Returns none if none are present
+    """
+    import json
+    import datetime
+    import math
+
+    cwd = str(Path(".").absolute())
+    d, parsed = get_anysnake()
+    lines = subprocess.check_output(["docker", "ps"]).decode("utf-8").split("\n")
+    candidates = []
+    for l in lines:
+        if d.docker_image in l:
+            docker_id = l[: l.find(" ")]
+            info = json.loads(
+                subprocess.check_output(["docker", "inspect", docker_id]).decode(
+                    "utf-8"
+                )
+            )[0]
+            env = parse_env(info.get("Config", {}).get("Env", {}))
+            found = False
+            found = env.get("ANYSNAKE_PROJECT_PATH", "") == cwd
+            mode = env.get("ANYSNAKE_MODE", "??")
+            if found:
+                # if mode in ('run','??', 'jupyter'):
+                ports = extract_ports_from_docker_inspect(info)
+                user = env.get("ANYSNAKE_USER", "??")
+                start_time = info.get('State', {}).get('StartedAt','')
+                if not start_time:
+                    start_time = datetime.datetime.now()
+                else:
+                    start_time = datetime.datetime.strptime(start_time[:start_time.rfind('.')], "%Y-%m-%dT%H:%M:%S")
+
+                candidates.append(
+                    (user, docker_id, info.get("Name", "/?")[1:], mode, ports, start_time)
+                )
+    if len(candidates) == 0:
+        return None
+    else:
+        print("Pick one")
+        print("Number",'owner','mode','uptime(hours)','ports', sep="\t")
+        candidates = sorted(candidates, key = lambda x: x[-1]) # sort by runtime
+        for (ii, (user, docker_id, name, mode, ports, start_time)) in enumerate(candidates):
+            delta = datetime.datetime.now() - start_time
+            hours = delta.seconds / 3600
+            ts = f"{math.floor(hours):02}:{math.ceil(60 * (hours - math.floor(hours))):02}"
+            print(ii, user, name, mode, 
+                    ts,
+                    ports if ports else "",
+                    sep="\t")
+        chosen = sys.stdin.readline().strip()
+        chosen = int(chosen)
+        candidates = [candidates[chosen]]
+    if candidates:
+        return candidates[0][2], candidates[0][1]
+
+    # print(d.docker_image)
+
 
 if __name__ == "__main__":
     main()
