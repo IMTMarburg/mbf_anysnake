@@ -62,6 +62,7 @@ class DockFill_Docker:
                 with tempfile.TemporaryDirectory() as td:
                     copytree(str(bs.parent), td)
                     df = Path(td) / "Dockerfile"
+                    df.chmod(0o644)
                     df.write_text(self.get_dockerfile_text(docker_image))
                     print("having to call", bs)
                     print(os.listdir(td))
