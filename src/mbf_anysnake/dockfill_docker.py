@@ -26,7 +26,7 @@ class DockFill_Docker:
         self.paths.update(
             {
                 "docker_image_build_scripts": (
-                    Path(__file__).parent.parent.parent / "docker_images"
+                    Path(__file__).parent / "docker_images"
                 )
             }
         )
