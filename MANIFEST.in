@@ -1,2 +1,3 @@
 include src/mbf_anysnake/docker_images/mbf_anysnake_18.04/*
 include src/mbf_anysnake/docker_images/mbf_minisnake_18.04/*
+include src/mbf_anysnake/bin/*
