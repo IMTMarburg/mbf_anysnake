@@ -91,7 +91,7 @@ class Anysnake:
         else:
             per_user = per_user / self.get_login_username()
 
-        bin_path = Path(__FILE__).parent / "bin"
+        bin_path = Path(__file__).parent / "bin"
         self.paths = {
             "bin": bin_path,
             "storage": storage_path,
