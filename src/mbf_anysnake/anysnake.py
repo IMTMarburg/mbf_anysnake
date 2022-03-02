@@ -311,7 +311,10 @@ class Anysnake:
         ro_volumes.append(volumes_ro)
         rw_volumes.append(volumes_rw)
         volumes = combine_volumes(ro=ro_volumes, rw=rw_volumes)
-        cmd = ["docker", "run", "-it", "--rm"]
+
+        cmd = ["docker", "run", "--rm", '-t']
+        if not 'IS_SYSTEMD' in os.environ:
+            cmd.append("-i")
         for inside_path, (outside_path, mode) in sorted(
             volumes.items(), key=lambda x: str(x[1])
         ):
