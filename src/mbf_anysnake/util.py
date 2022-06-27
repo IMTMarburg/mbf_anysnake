@@ -5,6 +5,7 @@ import subprocess
 import time
 import shutil
 import time
+from docker import from_env as docker_from_env
 from pathlib import Path
 
 re_github = r"[A-Za-z0-9-]+\/[A-Za-z0-9]+"
@@ -29,7 +30,7 @@ def combine_volumes(ro=[], rw=[]):
 
 def find_storage_path_from_other_machine(anysnake, postfix, check_func=None):
     """Find a usable storage path for this if it was already done by another machine
-    and storage_per_hostname is set. 
+    and storage_per_hostname is set.
     Otherwise return the local storage_path / postfix
     """
     if check_func is None:
@@ -79,19 +80,34 @@ def dict_to_toml(d):
     return toml
 
 
+def find_docker_ports():
+    client = docker_from_env()
+    res = set()
+    for container in client.containers.list():
+        for k, v in container.ports.items():
+            if k.endswith("/tcp"):
+                for x in v:
+                    if "HostPort" in x:
+                        res.add(int(x["HostPort"]))
+    return res
+
+
 def get_next_free_port(start_at):
     import socket
 
     try_next = True
     port = start_at
+    docker_ports = find_docker_ports
     while try_next:
         try:
+            if port in docker_ports:
+                raise ValueError()
             s = socket.socket()
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind(("localhost", port))
             s.close()
             try_next = False
-        except socket.error:
+        except (socket.error, ValueError):
             port += 1
         if port > start_at + 100:
             raise ValueError("No empty port found within search range")
