@@ -97,7 +97,7 @@ def get_next_free_port(start_at):
 
     try_next = True
     port = start_at
-    docker_ports = find_docker_ports
+    docker_ports = find_docker_ports()
     while try_next:
         try:
             if port in docker_ports:
